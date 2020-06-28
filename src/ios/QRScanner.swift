@@ -277,7 +277,16 @@ class QRScanner : CDVPlugin, AVCaptureMetadataOutputObjectsDelegate {
         if (typeMatched && found.stringValue != nil) {
 
             scanning = false
-            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: found.stringValue)
+            
+            guard var barcode = found.stringValue else {
+                return
+            }
+            
+            if found.type == AVMetadataObject.ObjectType.ean13 && barcode.hasPrefix("0"){
+                barcode = String(barcode[barcode.index(barcode.startIndex, offsetBy: 1)...])
+            }
+            
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: barcode)
             commandDelegate!.send(pluginResult, callbackId: nextScanningCommand?.callbackId!)
             nextScanningCommand = nil
         }
